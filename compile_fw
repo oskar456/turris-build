@@ -25,6 +25,7 @@ OPENWRT_BRANCH=master
 DEBUG=""
 KEY=""
 EVERYTHING=""
+USERLIST_FALLBACK="hbd"
 PERL_DEBUG=""
 SH_DEBUG=""
 MAKE_DEBUG=""
@@ -449,7 +450,9 @@ gen_lists() {
 	_report "Generating package lists for updater"
 	[ -n "${TARGET_BOARD}" ] || _die "You need to specify target board!"
 	mkdir -p bin/packages/lists
-	"${SRC_DIR}"/helpers/generate_userlists.sh --branch "${PUBLISH_BRANCH}" --src "${SRC_DIR}/lists" bin/packages/lists
+	local ARGS="--branch "${PUBLISH_BRANCH}" --src "${SRC_DIR}/lists""
+	[ "$EVERYTHING" = yes ] || ARGS="$ARGS --minimal $USERLIST_FALLBACK"
+	"${SRC_DIR}"/helpers/generate_userlists.sh $ARGS bin/packages/lists
 }
 
 build_help="	Builds everything"
@@ -553,6 +556,7 @@ help() {
 	echo "Available options are:"
 	echo "	-x		Enable debug mode"
 	echo "	-e		Build everything, not just minimal set"
+	echo "	-u branch	Fallback branch for userlists used when minimal set is build"
 	echo "	-f[num]	Try hard to get stuff to compile (optional number specifies number of tries)"
 	echo "	-d		Do not use shallow checkouts"
 	echo "	-t board	Set target board to _board_"
@@ -587,6 +591,10 @@ while expr x$1 : x- > /dev/null; do
 			;;
 		x-e)
 			EVERYTHING="yes"
+			;;
+		x-u)
+			USERLIST_FALLBACK="$1"
+			shift
 			;;
 		x-d)
 			DEPTH=""
