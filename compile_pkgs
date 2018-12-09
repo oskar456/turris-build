@@ -84,6 +84,8 @@ OUTPUT_DIR="./pkgsrepo" # Output directory for pkgsrepo command
 
 ##################################################################################
 
+checkout_git_hash="n" # Instead of checking out latest commits use those provided by git-hash file
+git_hash_file="" # git-hash file used if checkout_git_hash is enabled. If empty then it is received from: https://repo.turris.cz/BRANCH/packages/BOARD/git-hash
 # Technical variables
 declare -A available_commands # Set of all commands defined in this script
 mirror_updated="" # Variable signaling that mirrors were update in this run already
@@ -235,14 +237,18 @@ _checkout_init() {
 }
 
 _checkout_clean() {
-	BUILD_SETTINGS="$(cat turris-build.conf 2> /dev/null || true)"
+	git rev-parse HEAD > version
+	# First ignore some more files and
+	{
+		echo "/turris-build.conf"
+		echo "/version"
+		echo "/git-hash"
+	} >> ./.gitignore
+	_git commit -m 'gitignore: Ignore some more files' ./.gitignore
+	# Now do cleanup (ignored files are preserved)
 	git clean -dff
 	find . -name '*.rej' -delete
-	[ -z "$BUILD_SETTINGS" ] || echo "$BUILD_SETTINGS" > turris-build.conf
-	echo "/turris-build.conf" >> ./.gitignore
-	echo "/version" >> ./.gitignore
-	_git commit -m 'gitignore: Ignore some more files' ./.gitignore
-	git log -n 1 --format="%h" > version
+	# Optionally relink dl directory
 	if [ -n "$DL_MIRROR" ]; then
 		mkdir -p "$DL_MIRROR"
 		rm -rf dl && ln -s "$DL_MIRROR" dl
@@ -251,10 +257,21 @@ _checkout_clean() {
 
 available_commands+=( ["checkout"]="Start everything from scratch - all changes deleted and fresh copy of OpenWRT gets checked out" )
 checkout() {
-	_report "Starting out fresh!"
+	if [ "$checkout_git_hash" = "y" ]; then
+		if [ -z "$git_hash_file" ]; then
+			_report "Starting out relative to repo.turris.cz: $TARGET_BOARD-$PUBLISH_BRANCH"
+			curl "https://repo.turris.cz/$PUBLISH_BRANCH/packages/$TARGET_BOARD/git-hash" | tail -n +2 | grep -v '^$' | sed 's/^ \* //;s/: /:/' > repo-git-hash
+			git_hash_file="repo-git-hash"
+		else
+			_report "Starting out relative to $git_hash_file"
+		fi
+	else
+		_report "Starting out fresh!"
+	fi
 	_checkout_init
 	local githash
 	githash="$(echo "$OPENWRT_BRANCH" | sed -n 's|^#||p')"
+	[ "$checkout_git_hash" != "y" ] || githash="$(awk -F : '/^openwrt:/{print $2}' repo-git-hashes)"
 	if [ -n "$githash" ]; then
 		git fetch origin
 		git checkout -f "$githash"
@@ -565,6 +582,8 @@ print_help() {
 	echo "	-o PATH		Path to output directory where repository is prepared. In default ./pkgsrepo is used."
 	echo "	-s KEY		Sign packges with given private key. Key has to be generated using using tool."
 	echo "	-d		Do not use shallow checkouts"
+	echo "	-r[GIT-HASH]	Instead of building latest commit use provided git-hash file to checkout sources"
+	echo "			If no file is provided then chosen target board and branch are used to receive git-hash from https://repo.turris.cz/BRANCH/packages/BOARD/git-hash"
 	echo "	-x		Enable debug mode"
 	echo "	-h, --help	Show this help text"
 	echo
@@ -620,6 +639,10 @@ while [ $# -gt 0 ]; do
 			;;
 		-d)
 			CLONE_DEEP="y"
+			;;
+		-r*)
+			checkout_git_hash="y"
+			git_hash_file="${1#-r}"
 			;;
 		-x)
 			_enable_debug
