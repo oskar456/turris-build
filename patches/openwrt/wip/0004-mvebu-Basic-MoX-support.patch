@@ -4235,11 +4235,7 @@ diff --git a/target/linux/mvebu/patches-4.14/403-net-mvneta-convert-to-phylink.p
 similarity index 92%
 rename from target/linux/mvebu/patches-4.14/403-net-mvneta-convert-to-phylink.patch
 rename to target/linux/mvebu/patches-4.14/90039-net-mvneta-convert-to-phylink.patch
-<<<<<<< HEAD
-index 577317a..850d3be 100644
-=======
 index 34a2d34..3827dc0 100644
->>>>>>> 9ca6a63... patches/openwrt: rebase Mox support patch (fixes Omnia bug)
 --- a/target/linux/mvebu/patches-4.14/403-net-mvneta-convert-to-phylink.patch
 +++ b/target/linux/mvebu/patches-4.14/90039-net-mvneta-convert-to-phylink.patch
 @@ -1,7 +1,7 @@
@@ -11274,11 +11270,7 @@ index 0000000..ef80f7f
 +
 diff --git a/target/linux/mvebu/patches-4.14/90098-net-dsa-mv88e6xxx-Poll-when-no-interrupt-defined.patch b/target/linux/mvebu/patches-4.14/90098-net-dsa-mv88e6xxx-Poll-when-no-interrupt-defined.patch
 new file mode 100644
-<<<<<<< HEAD
-index 0000000..1fa9e00
-=======
 index 0000000..80aa5c0
->>>>>>> 9ca6a63... patches/openwrt: rebase Mox support patch (fixes Omnia bug)
 --- /dev/null
 +++ b/target/linux/mvebu/patches-4.14/90098-net-dsa-mv88e6xxx-Poll-when-no-interrupt-defined.patch
 @@ -0,0 +1,253 @@
