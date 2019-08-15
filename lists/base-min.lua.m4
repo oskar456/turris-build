@@ -31,7 +31,7 @@ Install("ebtables", "odhcpd", "odhcp6c", "rpcd", { priority = 40 })
 Install("opkg", "libustream-openssl", { priority = 40 })
 
 -- Turris minimum
-Install("vixie-cron", "syslog-ng", { priority = 40 })
+Install("cronie", "syslog-ng", { priority = 40 })
 Install("logrotate", { priority = 40 })
 Install("dnsmasq-full", { priority = 40 })
 if board == "turris1x" then
