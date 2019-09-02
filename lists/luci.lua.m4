@@ -8,7 +8,7 @@ if for_l10n then
 	for_l10n("luci-i18n-base-")
 end
 
-luci_app("ppp", "commands")
-luci_proto("ipv6")
+luci_app("commands")
+luci_proto("ipv6", "ppp")
 
 _END_FEATURE_GUARD_
